@@ -6,6 +6,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.docstore.document import Document
+from langchain_google_genai import ChatGoogleGenerativeAI
 import uuid
 import argparse
 import dotenv
@@ -72,6 +73,10 @@ class Chat():
                 temperature=0, openai_api_key=self.__key, verbose=True, model="gpt-4-0125-preview")
         elif llm == "cohere":
             self.__client = Cohere()
+        elif llm == "google":
+            self.__client = ChatGoogleGenerativeAI(
+                model="gemini-pro"
+            )
 
         self.__conversation_id = str(uuid.uuid4())
         self.__chain = Chain.get_chain(self.__client)
@@ -197,13 +202,17 @@ if __name__ == "__main__":
     # Option to choose between cohere and openai llm
     parser.add_argument('--use_cohere', action='store_true',
                         help="Use cohere llm instead of openai")
+    parser.add_argument('--use_google', action='store_true',
+                        help="Use Gemini LLM")
 
     args = parser.parse_args()
 
     # Handle operations
-
+    assert(not(args.use_cohere and args.use_google))
     if args.use_cohere:
         chat = Chat("cohere", args.use_chroma, args.use_openai_embeddings)
+    elif args.use_google:
+        chat = Chat("google", args.use_chroma, args.use_openai_embeddings)
     else:
         chat = Chat("openai", args.use_chroma, args.use_openai_embeddings)
 
