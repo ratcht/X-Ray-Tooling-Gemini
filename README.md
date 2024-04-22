@@ -17,8 +17,7 @@ To start the backend and frontend services for the X-Ray-Tooling application, fo
 1. Navigate to the backend directory and start the FastAPI server:
 
    ```
-   cd ./xray_tooling_apis
-   uvicorn app:app --reload
+   uvicorn xray_tooling_apis.app:app --reload
    ```
 
 2. In a new terminal, navigate to the frontend directory and start the React application:

@@ -35,7 +35,7 @@ const ChatScreen = () => {
   });
   const [flowMessage, setFlowMessage] = useState("");
 
-  const [model, setModel] = useState("openai");
+  const [model, setModel] = useState("google");
 
   const [data, setData] = useState("");
 
@@ -73,10 +73,9 @@ const ChatScreen = () => {
 
   // render flows beforehand
   useEffect(() => {
-    if (injury.trim() === '' || injuryLocation.trim() === '') return;
-    const flowTypes = ['base', 'restriction', 'heat_ice', 'expectation'];
+    if (injury.trim() === "" || injuryLocation.trim() === "") return;
+    const flowTypes = ["base", "restriction", "heat_ice", "expectation"];
     // testing
-  
 
     console.log("isSaved: ", isSaved);
 
@@ -85,7 +84,6 @@ const ChatScreen = () => {
     // flowTypes.forEach((flowType) => {
     //   sendFlowQuery(flowType);
     // });
-
   }, [isSaved]);
 
   const sendQuery = async () => {
@@ -192,55 +190,52 @@ const ChatScreen = () => {
     } catch (error) {
       console.error("Error running RAG:", error);
     }
-  }
+  };
 
+  const sendFlows = async (flows) => {
+    if (injury.trim() == "" || injuryLocation.trim() == "") return;
 
+    try {
+      // set loading
+      setFlowMessage("Loading...");
+      const response = await fetch("http://127.0.0.1:8000/rag/flow/async", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          injury: injury,
+          injury_location: injuryLocation,
+          flows: flows,
+          model: model,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log("RAG run:", data);
+        setData(data);
 
-const sendFlows = async (flows) => {
-  if (injury.trim() == '' || injuryLocation.trim() == '') return;
+        console.log(data.responses.length);
+        var fData = {};
+        var fDocs = {};
 
-  try {
-    // set loading
-    setFlowMessage("Loading...");
-    const response = await fetch('http://127.0.0.1:8000/rag/flow/async', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ injury: injury, injury_location: injuryLocation, flows: flows, model: model }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log('RAG run:', data);
-      setData(data);
-      
-      console.log(data.responses.length);
-      var fData = {};
-      var fDocs = {};
+        for (let i = 0; i < data.responses.length; i++) {
+          fData[data.responses[i][0]] = data.responses[i][1][0].content;
+          fDocs[data.responses[i][0]] = data.responses[i][1][1].map(
+            (doc) => doc.page_content
+          );
+        }
 
+        setFlowData(fData);
+        setFlowDocs(fDocs);
 
-    
-      for (let i = 0; i < data.responses.length; i++){
-        fData[data.responses[i][0]] = data.responses[i][1][0].content;
-        fDocs[data.responses[i][0]] = data.responses[i][1][1].map((doc) => doc.page_content);
-
+        console.log("FData: ", fData);
+        console.log("FDocs: ", fDocs);
       }
-      
-
-      setFlowData(fData);
-      setFlowDocs(fDocs);
-
-      console.log("FData: ",fData);
-      console.log("FDocs: ",fDocs);
-
-
+    } catch (error) {
+      console.error("Error running RAG:", error);
     }
-  } catch (error) {
-    console.error('Error running RAG:', error);
-  }
-  
-};
-
+  };
 
   const renderFlowDocs = (flowDocs) => {
     // Check if flowDocs is empty and return a message or null to avoid rendering empty container
@@ -548,8 +543,8 @@ const sendFlows = async (flows) => {
             component="div"
             sx={{ color: "black", marginTop: "5px", fontWeight: "bold" }}
           >
-          <span style={{ color: '#4686ee', fontSize: 28 }}>X</span>
-          <span style={{ color: 'black', fontSize:28 }}>Care</span>
+            <span style={{ color: "#4686ee", fontSize: 28 }}>X</span>
+            <span style={{ color: "black", fontSize: 28 }}>Care</span>
           </Typography>
           <div
             sx={{

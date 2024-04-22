@@ -68,7 +68,7 @@ class ChromaEmbedding(Embedding):
         self,
         use_openai=False,
         num_matches=5,
-        dataset_path="RAG/datasets/"
+        dataset_path="datasets/"
     ) -> None:
 
         self.__open_key = os.getenv('OPENAI_API_KEY')

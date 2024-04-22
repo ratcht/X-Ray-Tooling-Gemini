@@ -53,7 +53,7 @@ class Chat():
         __max_tokens int: max number of tokns a response to a query can be
     """
 
-    def __init__(self, llm: str = "openai", chroma_embedding=True, use_openai=True, chunking_max_tokens=100, num_matches=5, max_tokens=500, dataset_path="../RAG/datasets/"):
+    def __init__(self, llm: str = "openai", chroma_embedding=True, use_openai=False, chunking_max_tokens=100, num_matches=5, max_tokens=500, dataset_path="../RAG/datasets/"):
         """
         Initializes the Chat class, setting up the embedding model used for queries.
 
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Handle operations
-    assert(not(args.use_cohere and args.use_google))
+    assert (not (args.use_cohere and args.use_google))
     if args.use_cohere:
         chat = Chat("cohere", args.use_chroma, args.use_openai_embeddings)
     elif args.use_google:

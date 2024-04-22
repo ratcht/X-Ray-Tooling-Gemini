@@ -1,3 +1,6 @@
+import asyncio
+import concurrent.futures
+from concurrent.futures.thread import ThreadPoolExecutor
 from RAG.flows import FlowType
 from RAG.chat import Chat
 from pydantic import BaseModel
@@ -142,8 +145,9 @@ async def phase2():
 
 chat_cohere = Chat(llm="cohere")
 chat_openai = Chat(llm="openai")
+chat_google = Chat(llm="google")
 
-models = {"cohere": chat_cohere, "openai": chat_openai}
+models = {"cohere": chat_cohere, "openai": chat_openai, "google": chat_google}
 
 
 class Query(BaseModel):
@@ -204,43 +208,43 @@ class MultiFlowQuery(BaseModel):
     injury_location: str
     model: str
 
-import asyncio
-from concurrent.futures.thread import ThreadPoolExecutor
-import concurrent.futures
 
 def worker(injury, injury_location, flow, model: Chat):
     response = model.flow_query(injury, injury_location, flow)
     return (flow, response)
 
+
 def generate_flows(injury, injury_location, flows, model: Chat):
-  executor = ThreadPoolExecutor(max_workers=10)
+    executor = ThreadPoolExecutor(max_workers=10)
 
-  futures = [executor.submit(worker, injury, injury_location, flow, model) for flow in flows]
-  done, not_done = concurrent.futures.wait(futures, return_when=concurrent.futures.ALL_COMPLETED)
+    futures = [executor.submit(
+        worker, injury, injury_location, flow, model) for flow in flows]
+    done, not_done = concurrent.futures.wait(
+        futures, return_when=concurrent.futures.ALL_COMPLETED)
 
-  res = []
+    res = []
 
-  for task in done:
-    res.append(task.result())
+    for task in done:
+        res.append(task.result())
 
-  return res
+    return res
 
 
 @app.post("/rag/flow/async")
 async def rag_flow(flow_query: MultiFlowQuery):
     # return run_similarity_search(qu)
 
-    if flow_query.model not in models: return {"error": "model not found."}
-    
+    if flow_query.model not in models:
+        return {"error": "model not found."}
+
     flows = [FlowType(flow) for flow in flow_query.flows]
     model = models[flow_query.model]
 
-    coroutine = generate_flows(flow_query.injury, flow_query.injury_location, flows, model)
+    coroutine = generate_flows(
+        flow_query.injury, flow_query.injury_location, flows, model)
     print(coroutine)
 
     return {"injury": flow_query.injury, "injury_location": flow_query.injury_location, "responses": coroutine}
-
-
 
 
 @app.post("/rag/flow/stream")
