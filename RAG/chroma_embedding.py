@@ -72,7 +72,7 @@ class ChromaEmbedding(Embedding):
     ) -> None:
 
         self.__open_key = os.getenv('OPENAI_API_KEY')
-        self.__embeddings_gem = GoogleGenerativeAIEmbeddings(
+        self.__embeddings_hugging = GoogleGenerativeAIEmbeddings(
             model="models/embedding-001")
         self.__embedding_open = OpenAIEmbeddings(
             openai_api_key=self.__open_key)
@@ -86,8 +86,8 @@ class ChromaEmbedding(Embedding):
         self.__xray_articles = self.__load_xray_articles()
         self.__xray_chunked_articles = self.__chunk_documents(
             self.__xray_articles)
-        self.__embedding_in_use = self.__embedding_open if use_openai else self.__embeddings_gem
-        print(f"Using {'OpenAI' if use_openai else 'Google'} Embedding")
+        self.__embedding_in_use = self.__embedding_open if use_openai else self.__embeddings_hugging
+        print(f"Using {'OpenAI' if use_openai else 'HuggingFace'} Embedding")
         self.__chroma_db = None
         if not os.path.isdir('./db'):
             self.create_and_populate_chroma()
@@ -219,8 +219,8 @@ class ChromaEmbedding(Embedding):
     def get_chunked_articles(self) -> object:
         return self.__xray_chunked_articles
 
-    def get_google_embedding_model(self) -> object:
-        return self.__embeddings_gem
+    def get_hugging_embedding_model(self) -> object:
+        return self.__embeddings_hugging
 
     def get_open_embedding_model(self) -> object:
         return self.__embedding_open
@@ -245,9 +245,9 @@ class ChromaEmbedding(Embedding):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Chroma Embedding Tool")
 
-    # Option to choose between OpenAI and Google embeddings
+    # Option to choose between OpenAI and HuggingFace embeddings
     parser.add_argument('--use_openai', action='store_true',
-                        help="Use OpenAI embeddings instead of Google's")
+                        help="Use OpenAI embeddings instead of HuggingFace's")
 
     # Commands for different operations
     subparsers = parser.add_subparsers(dest='operation', help='Operations')
